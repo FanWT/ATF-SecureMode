@@ -148,6 +148,58 @@ void do_en(signed char *src_data, signed char *aes, signed char *dst_data, unsig
 		dst_data[i] = src_data[i]^aes[i%aes_len];
 	}
 } 
+
+#define KEY_LEN 32
+void aes_en(signed char *src_data, signed char *aes, signed char *dst_data, unsigned int len, unsigned int aes_len)
+{	
+	uint8_t key[KEY_LEN];
+	if (aes_len < KEY_LEN){
+		int len = 0;
+		while (len < KEY_LEN){
+			memcpy1(key + len, aes, aes_len+len < KEY_LEN ? aes_len:KEY_LEN-len);
+			len += aes_len;
+		}
+	}
+	else {
+		memcpy1(key, aes, KEY_LEN);
+	}
+	aes_context ctx;
+	aes_set_key(&ctx, key, 128);
+	int i = 0;
+	for (;i+16 < len;i+=16){
+		aes_encrypt_block(&ctx, (uint8_t*)dst_data +i, (uint8_t*)src_data);
+	
+	}
+    if (i < len){
+		do_en(src_data, aes, dst_data, len, aes_len);
+	}
+	
+}
+
+void aes_de(signed char *src_data, signed char *aes, signed char *dst_data, unsigned int len, unsigned int aes_len)
+{
+	uint8_t key[KEY_LEN];
+	if (aes_len < KEY_LEN){
+		int len = 0;
+		while (len < KEY_LEN){
+			memcpy1(key + len, aes, aes_len+len < KEY_LEN ? aes_len:KEY_LEN-len);
+			len += aes_len;
+		}
+	}
+	else {
+		memcpy1(key, aes, KEY_LEN);
+	}
+	aes_context ctx;
+	aes_set_key(&ctx, key, 128);
+	int i = 0;
+	for (;i+16 < len;i+=16){
+		aes_decrypt_block(&ctx, (uint8_t*)dst_data +i, (uint8_t*)src_data);
+	
+	}
+    if (i < len){
+		do_en(src_data, aes, dst_data, len, aes_len);
+	}
+}
 /* Register Standard Service Calls as runtime service */
 DECLARE_RT_SVC(
 		std_svc,

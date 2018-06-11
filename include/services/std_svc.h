@@ -45,4 +45,46 @@ struct s {
  */
 uintptr_t get_arm_std_svc_args(unsigned int svc_mask);
 void do_en(signed char*, signed char*, signed char*, unsigned int, unsigned int);
+//aes algorithm usage
+
+#define SUCCESS 0
+#define PARM_ERROR 1
+#define NOT_INIT_KEY 2
+
+#define BLOCK_SIZE 16
+
+typedef struct
+{
+	uint32_t nr;		// rounds
+	uint32_t *rk;		// round_key
+	uint32_t buf[68];	// store round_keys, each block is 4 bytes
+} aes_context;
+
+int aes_set_key(aes_context *ctx, const uint8_t *key, uint32_t key_bit);
+
+int aes_encrypt_block(aes_context *ctx, uint8_t cipher_text[16], const uint8_t text[16]);
+int aes_decrypt_block(aes_context *ctx, uint8_t text[16], const uint8_t cipher_text[16]);
+
+void *memcpy1(void *dest, const void *src, size_t count)  
+{  
+	char *d;  
+	const char *s;  
+   
+	if ((dest > (src+count)) || (dest < src))  
+    {  
+		d = dest;  
+	    s = src;  
+	    while (count--)  
+	        *d++ = *s++;          
+    }  
+	else /* overlap */  
+    {  
+	    d = (char *)(dest + count - 1); /* offset of pointer is from 0 */  
+	    s = (char *)(src + count -1);  
+	    while (count --)  
+	        *d-- = *s--;  
+    }  
+    
+	return dest;  
+}  
 #endif /* __STD_SVC_H__ */
